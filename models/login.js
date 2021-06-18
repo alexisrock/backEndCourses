@@ -12,7 +12,9 @@ let LoginSchema = new Schema({
         type: String,
         required: true,
         trim: true
-    }
+    },
+    passwordResetToken: String,
+    passwordResetTokenExpires: Date
 });
 
 

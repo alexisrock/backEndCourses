@@ -11,11 +11,14 @@ var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB Connection error:'));
 
 
+const jwt = require('jsonwebtoken');
 
 
 var coursesRouter = require('./Routes/Coursesrouter');
 var usersRouter = require('./Routes/usersroute');
-var loginRouter = require('./Routes/Loginroute')
+var loginRouter = require('./Routes/Loginroute');
+var enrollmentRouter = require('./Routes/enrollmentRoter');
+var pagesRouter = require('./Routes/PagesRoute')
 
 
 var app = express();
@@ -31,14 +34,29 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api/courses', coursesRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/courses', validar,coursesRouter);
+app.use('/api/users',validar, usersRouter);
+app.use('/api/enrollment',validar, enrollmentRouter);
+app.use('/api/pages', validar,pagesRouter);
 app.use('/api/login', loginRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
+
+function validar(req, res, next){
+  jwt.verify(req.headers['tokenkey'], req.app.get('secretKey'), function(err, decoded){
+   if(err){
+       res.json({status: 'error', message: err.message, data: null});
+   }else{
+     console.log('jwt verificado: ');
+     next(); 
+   }
+  });
+
+}
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -50,5 +68,8 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+
 
 module.exports = app;

@@ -2,16 +2,22 @@ var Login = require('../models/login')
 const jwt = require('jsonwebtoken');
 
 
-exports.autenticacte=function(req, res,  next){
-    Login.findone({username: req.body.username}, function (err, login) {
+exports.autenticate=function(req, res,  next){
+    Login.find({username: req.body.username}, function (err, logininfo) {
         if(err){
             next(err);                
         }else{
-            if(login===null){ return   res.status(401).json({status: 'error', message: 'Usuario no encontrado'});}
-            if(login!=null && req.body.password==login.password){
-                login.save(function(err, usuario){
+            console.log('entro');
+    
+            if(logininfo===null){ return   res.status(401).json({status: 'error', message: 'Usuario no encontrado'});}
+            console.log('paass body: '+req.body.password);
+            console.log('paass info: '+logininfo[0].password);
+       
+            if(req.body.password===logininfo[0].password){
+                console.log('paass true');
+                logininfo[0].save(function(err, login){
                     const token = jwt.sign({id: login._id}, req.app.get('secretKey'), { expiresIn: '1d'});
-                    res.status(200).json({ message: 'Usuario encontrado', data: {usuario: login, token:token}});
+                    res.status(200).json({ message: 'Usuario encontrado', data: {login: login, token:token}});
                 });
 
             }
